@@ -17,7 +17,7 @@ let
 
   androidComposition = pkgs.androidenv.composeAndroidPackages {
     cmdLineToolsVersion = "13.0";
-    platformToolsVersion = "34.0.5";
+    platformToolsVersion = "36.0.2";
     buildToolsVersions = [ buildToolsVersion ];
     platformVersions = [ platformVersion ];
     abiVersions = [ "x86_64" "armeabi-v7a" "arm64-v8a" ];

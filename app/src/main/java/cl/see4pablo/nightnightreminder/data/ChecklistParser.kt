@@ -1,16 +1,22 @@
 package cl.see4pablo.nightnightreminder.data
 
 /**
- * Tiny MVP splitter: turn a spoken sentence into checklist lines.
+ * Splits spoken text into checklist lines.
+ *
+ * Separators (natural speech):
+ *  - commas / "and" / "y" / "después" / "luego"
+ *
+ * Magic word (explicit new task):
+ *  - "también", "además", "siguiente", "next", "nueva"
  *
  * Examples:
- *  - "buy milk and bread and call mom"
- *  - "comprar pan, leche y huevos"
+ *  - "cepillar dientes también cargar teléfono también empacar mochila"
+ *  - "brush teeth, pack bag, and charge phone"
  */
 object ChecklistParser {
     private val splitter =
         Regex(
-            """\s*(?:,|;|/|\band\b|\by\b|\be\b|\bthen\b|\bdespués\b|\bluego\b)\s*""",
+            """\s*(?:,|;|/|\band\b|\by\b|\be\b|\bthen\b|\bdespués\b|\bluego\b|\btambién\b|\btambien\b|\bademás\b|\bademas\b|\bsiguiente\b|\bnext\b|\bnueva\b)\s*""",
             RegexOption.IGNORE_CASE,
         )
 
@@ -35,6 +41,16 @@ object ChecklistParser {
             .split(splitter)
             .map { it.trim().trim('.', '!', '?') }
             .filter { it.length >= 2 }
+            .map { capitalizePhrase(it) }
             .distinctBy { it.lowercase() }
+    }
+
+    /** "cepillar dientes" → "Cepillar dientes" */
+    fun capitalizePhrase(phrase: String): String {
+        val trimmed = phrase.trim()
+        if (trimmed.isEmpty()) return trimmed
+        return trimmed.replaceFirstChar { ch ->
+            if (ch.isLowerCase()) ch.titlecase(java.util.Locale.getDefault()) else ch.toString()
+        }
     }
 }

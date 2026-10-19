@@ -3,6 +3,8 @@ package cl.see4pablo.nightnightreminder.voice
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -14,9 +16,26 @@ class SpeechHelper(
     private val onResult: (String) -> Unit,
     private val onError: (String) -> Unit,
     private val onListeningChanged: (Boolean) -> Unit,
+    private val onSilenceTimeout: () -> Unit = {},
+    /** Only fires if no speech started and no words within this window. */
+    private val silenceTimeoutMs: Long = 3_000L,
 ) {
     private val appContext = context.applicationContext
     private var recognizer: SpeechRecognizer? = null
+    private val handler = Handler(Looper.getMainLooper())
+    private var speechStarted = false
+    private var heardWords = false
+    private var stoppingIntentionally = false
+
+    private val silenceRunnable =
+        Runnable {
+            // Only stop if the user never started talking and we never got words.
+            if (!speechStarted && !heardWords) {
+                stoppingIntentionally = true
+                stop(notifyListening = true)
+                onSilenceTimeout()
+            }
+        }
 
     val isAvailable: Boolean
         get() = SpeechRecognizer.isRecognitionAvailable(appContext)
@@ -26,31 +45,45 @@ class SpeechHelper(
             onError("Speech recognition is not available on this device.")
             return
         }
-        stop()
+        stop(notifyListening = false)
+        speechStarted = false
+        heardWords = false
+        stoppingIntentionally = false
+
         val speech =
             SpeechRecognizer.createSpeechRecognizer(appContext).also { recognizer = it }
         speech.setRecognitionListener(
             object : RecognitionListener {
                 override fun onReadyForSpeech(params: Bundle?) {
                     onListeningChanged(true)
+                    armSilenceTimer()
                 }
 
-                override fun onBeginningOfSpeech() = Unit
+                override fun onBeginningOfSpeech() {
+                    speechStarted = true
+                    // User is speaking — wait for results; do not re-arm silence cutoff.
+                    cancelSilenceTimer()
+                }
 
                 override fun onRmsChanged(rmsdB: Float) = Unit
 
                 override fun onBufferReceived(buffer: ByteArray?) = Unit
 
                 override fun onEndOfSpeech() {
+                    cancelSilenceTimer()
                     onListeningChanged(false)
                 }
 
                 override fun onError(error: Int) {
+                    cancelSilenceTimer()
                     onListeningChanged(false)
+                    // Ignore client errors caused by our own stop/cancel.
+                    if (stoppingIntentionally && error == SpeechRecognizer.ERROR_CLIENT) return
                     onError(errorMessage(error))
                 }
 
                 override fun onResults(results: Bundle?) {
+                    cancelSilenceTimer()
                     onListeningChanged(false)
                     val text =
                         results
@@ -58,8 +91,9 @@ class SpeechHelper(
                             ?.firstOrNull()
                             .orEmpty()
                     if (text.isBlank()) {
-                        onError("I didn't catch that. Try again.")
+                        onError("No detecté palabras.")
                     } else {
+                        heardWords = true
                         onResult(text)
                     }
                 }
@@ -69,7 +103,12 @@ class SpeechHelper(
                         partialResults
                             ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                             ?.firstOrNull()
-                    if (!text.isNullOrBlank()) onPartial(text)
+                    if (!text.isNullOrBlank()) {
+                        heardWords = true
+                        speechStarted = true
+                        cancelSilenceTimer()
+                        onPartial(text)
+                    }
                 }
 
                 override fun onEvent(eventType: Int, params: Bundle?) = Unit
@@ -85,31 +124,52 @@ class SpeechHelper(
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE, locale.toLanguageTag())
                 putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
                 putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
-                putExtra(RecognizerIntent.EXTRA_PROMPT, "Night Night Reminder")
+                putExtra(RecognizerIntent.EXTRA_PROMPT, "Night Recaller")
             }
         speech.startListening(intent)
     }
 
-    fun stop() {
-        recognizer?.stopListening()
-        recognizer?.cancel()
-        recognizer?.destroy()
+    fun stop(notifyListening: Boolean = true) {
+        cancelSilenceTimer()
+        stoppingIntentionally = true
+        val current = recognizer
         recognizer = null
-        onListeningChanged(false)
+        try {
+            current?.stopListening()
+        } catch (_: Exception) {
+        }
+        try {
+            current?.cancel()
+        } catch (_: Exception) {
+        }
+        try {
+            current?.destroy()
+        } catch (_: Exception) {
+        }
+        if (notifyListening) onListeningChanged(false)
+    }
+
+    private fun armSilenceTimer() {
+        cancelSilenceTimer()
+        handler.postDelayed(silenceRunnable, silenceTimeoutMs)
+    }
+
+    private fun cancelSilenceTimer() {
+        handler.removeCallbacks(silenceRunnable)
     }
 
     private fun errorMessage(code: Int): String =
         when (code) {
-            SpeechRecognizer.ERROR_AUDIO -> "Microphone error."
-            SpeechRecognizer.ERROR_CLIENT -> "Recognition client error."
-            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Microphone permission required."
+            SpeechRecognizer.ERROR_AUDIO -> "Error de micrófono."
+            SpeechRecognizer.ERROR_CLIENT -> "Error del reconocedor."
+            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Permiso de micrófono requerido."
             SpeechRecognizer.ERROR_NETWORK,
             SpeechRecognizer.ERROR_NETWORK_TIMEOUT,
-            -> "Network problem during recognition."
-            SpeechRecognizer.ERROR_NO_MATCH -> "No speech match. Try again."
-            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Recognizer busy. Wait a moment."
-            SpeechRecognizer.ERROR_SERVER -> "Recognition server error."
-            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "No speech heard. Try again."
-            else -> "Speech error ($code)."
+            -> "Problema de red al reconocer."
+            SpeechRecognizer.ERROR_NO_MATCH -> "No detecté palabras."
+            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Reconocedor ocupado. Esperá un momento."
+            SpeechRecognizer.ERROR_SERVER -> "Error del servidor de voz."
+            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Silencio — dejé de grabar."
+            else -> "Error de voz ($code)."
         }
 }

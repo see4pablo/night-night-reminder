@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "NightNightReminder"
+rootProject.name = "NightRecaller"
 include(":app")
