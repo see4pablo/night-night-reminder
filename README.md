@@ -1,33 +1,37 @@
 # Night Recaller
 
-App Android nocturna: dictás lo que falta hacer y se convierte en una checklist.
+<p align="center">
+  <img src="docs/icon.png" alt="Night Recaller icon" width="128" height="128" />
+</p>
 
-> ¿Algo pendiente para mañana?
+Nighttime Android app: speak what’s left to do and get a checklist.
 
-Ejemplo: *“cepillar dientes también cargar teléfono también empacar mochila”* → tres tareas.
+> Anything left for tomorrow?
 
-## Qué hace
+Example: *“brush teeth, pack bag, and charge phone”* → three tasks.
 
-- **Home** tipográfica (modo noche) con micrófono rojo
-- Dictado por voz → ítems (separa por comas, `y` / `and`, o palabra mágica **`también`**)
-- **Hoy** / **Anteriores**: listas por día, persistidas
-- Aviso suave a las **20:00** con pendientes (*“Tienes tareas pendientes · night night”*)
-- Sonidos cortos de madera (empezar / parar / agregar ítems)
-- Si no hay voz en ~3 s (sin empezar a hablar), corta solo
+## Features
+
+- Typography-first **home** (night mode) with a red mic
+- Voice → checklist items (splits on commas, `and` / `y`, or magic word **`next`** / **`también`**)
+- **Today** / **Past**: per-day lists, persisted locally
+- Soft **20:00** ping with pending tasks (*“You have pending tasks · night night”*)
+- Short wooden UI sounds (start / stop / items added)
+- Stops alone if no speech starts within ~3 seconds
 
 ## Stack
 
 - Kotlin + Jetpack Compose
-- `SpeechRecognizer` (servicio de voz del dispositivo / Google)
-- Persistencia local (`SharedPreferences` + JSON)
-- `AlarmManager` + notificaciones estilo “social” (no alarma)
+- `SpeechRecognizer` (device / Google speech service)
+- Local persistence (`SharedPreferences` + JSON)
+- `AlarmManager` + social-style notifications (not an alarm)
 - Nix (`shell.nix`) → JDK 17 + Android SDK
 
-## Requisitos
+## Requirements
 
-- Teléfono con reconocimiento de voz de Google
-- Permisos: micrófono + notificaciones
-- Nix (para el entorno del repo)
+- Phone with Google speech recognition
+- Microphone + notification permissions
+- Nix (for the provided shell)
 
 ## Setup
 
@@ -35,23 +39,23 @@ Ejemplo: *“cepillar dientes también cargar teléfono también empacar mochila
 cd night-night-reminder
 nix-shell
 ./gradlew :app:assembleDebug
-./gradlew :app:installDebug   # dispositivo con depuración USB
+./gradlew :app:installDebug   # device with USB debugging
 ```
 
-`nix-shell` genera `local.properties` con `sdk.dir` (gitignored).
+`nix-shell` writes `local.properties` with `sdk.dir` (gitignored).
 
-En **Xiaomi / HyperOS** suele hacer falta:
+On **Xiaomi / HyperOS** you often need:
 
-1. Depuración USB + **Instalar vía USB**
-2. **Depuración USB (ajustes de seguridad)**
-3. Volumen de **medios** arriba (los sonidos UI usan ese stream)
+1. USB debugging + **Install via USB**
+2. **USB debugging (Security settings)**
+3. **Media** volume up (UI sounds use that stream)
 
-## Uso rápido
+## Quick use
 
-1. Tocá el mic → dictá tareas (separá con *también* si hace falta)
-2. Abrí **Hoy** para marcar / borrar
-3. **Anteriores** guarda noches pasadas (incluye seed de demo del 9 oct)
-4. Debug en home: **Probar aviso** / **Reprogramar** (alerta 20:00)
+1. Tap the mic → dictate tasks (use *next* / *también* between items if needed)
+2. Open **Today** to check / remove items
+3. **Past** keeps earlier nights (includes an Oct 9 demo seed)
+4. Home debug: **Try ping** / **Reschedule** (20:00 alert)
 
 ## Tests
 
@@ -59,23 +63,23 @@ En **Xiaomi / HyperOS** suele hacer falta:
 nix-shell --run './gradlew :app:testDebugUnitTest'
 ```
 
-Cubre:
+Covers:
 
-- `ChecklistParser` (split EN/ES, mayúsculas, dedupe, prefijos)
-- `SeedData` (fecha de cumpleaños demo)
-- `BedtimeScheduler.nextTriggerDateTime` (antes/después de las 20:00)
+- `ChecklistParser` (EN/ES split, capitalization, dedupe, prefixes)
+- `SeedData` (demo birthday date)
+- `BedtimeScheduler.nextTriggerDateTime` (before/after 20:00)
 
 ## MVP
 
-- [x] Voz → texto → checklist
-- [x] Palabra mágica / conectores multilingües básicos
-- [x] Home Night Recaller → Hoy / Anteriores
-- [x] Persistencia por día
-- [x] Notificación 20:00 + debug
-- [x] Sonidos UI + timeout de silencio
-- [ ] Parsing multilingüe más robusto
-- [ ] Horario de bedtime configurable
+- [x] Voice → text → checklist
+- [x] Magic word / basic multilingual connectors
+- [x] Night Recaller home → Today / Past
+- [x] Persist per day
+- [x] 20:00 notification + debug
+- [x] UI sounds + silence timeout
+- [ ] Stronger multilingual parsing
+- [ ] Configurable bedtime hour
 
-## Paquete
+## Package
 
-`cl.see4pablo.nightnightreminder` · versión `0.1.0`
+`cl.see4pablo.nightnightreminder` · version `0.1.0`

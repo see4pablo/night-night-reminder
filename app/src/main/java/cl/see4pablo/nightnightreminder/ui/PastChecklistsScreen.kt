@@ -58,7 +58,7 @@ fun PastChecklistsScreen(viewModel: ChecklistViewModel) {
             IconButton(onClick = viewModel::openHome) {
                 Icon(
                     Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "Volver",
+                    contentDescription = "Back",
                     tint = NightMuted,
                 )
             }
@@ -66,9 +66,9 @@ fun PastChecklistsScreen(viewModel: ChecklistViewModel) {
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(text = "ANTERIORES", style = MaterialTheme.typography.labelLarge)
+                Text(text = "PAST", style = MaterialTheme.typography.labelLarge)
                 Text(
-                    text = "Noches",
+                    text = "Nights",
                     style = MaterialTheme.typography.headlineLarge,
                 )
             }
@@ -79,7 +79,7 @@ fun PastChecklistsScreen(viewModel: ChecklistViewModel) {
 
         if (state.past.isEmpty()) {
             Text(
-                text = "Cuando guardes tareas en días distintos, aparecerán acá.",
+                text = "When you save tasks on different days, they’ll show up here.",
                 style = MaterialTheme.typography.bodyMedium,
             )
         } else {

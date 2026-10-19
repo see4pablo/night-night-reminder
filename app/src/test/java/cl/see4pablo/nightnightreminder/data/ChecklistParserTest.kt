@@ -36,7 +36,7 @@ class ChecklistParserTest {
     @Test
     fun capitalizesEachPhrase() {
         assertEquals("Hola mundo", ChecklistParser.capitalizePhrase("hola mundo"))
-        assertEquals("Ya Mayúscula", ChecklistParser.capitalizePhrase("Ya Mayúscula"))
+        assertEquals("Already Capital", ChecklistParser.capitalizePhrase("Already Capital"))
     }
 
     @Test

@@ -29,7 +29,6 @@ class SpeechHelper(
 
     private val silenceRunnable =
         Runnable {
-            // Only stop if the user never started talking and we never got words.
             if (!speechStarted && !heardWords) {
                 stoppingIntentionally = true
                 stop(notifyListening = true)
@@ -61,7 +60,6 @@ class SpeechHelper(
 
                 override fun onBeginningOfSpeech() {
                     speechStarted = true
-                    // User is speaking — wait for results; do not re-arm silence cutoff.
                     cancelSilenceTimer()
                 }
 
@@ -77,7 +75,6 @@ class SpeechHelper(
                 override fun onError(error: Int) {
                     cancelSilenceTimer()
                     onListeningChanged(false)
-                    // Ignore client errors caused by our own stop/cancel.
                     if (stoppingIntentionally && error == SpeechRecognizer.ERROR_CLIENT) return
                     onError(errorMessage(error))
                 }
@@ -91,7 +88,7 @@ class SpeechHelper(
                             ?.firstOrNull()
                             .orEmpty()
                     if (text.isBlank()) {
-                        onError("No detecté palabras.")
+                        onError("No words detected.")
                     } else {
                         heardWords = true
                         onResult(text)
@@ -160,16 +157,16 @@ class SpeechHelper(
 
     private fun errorMessage(code: Int): String =
         when (code) {
-            SpeechRecognizer.ERROR_AUDIO -> "Error de micrófono."
-            SpeechRecognizer.ERROR_CLIENT -> "Error del reconocedor."
-            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Permiso de micrófono requerido."
+            SpeechRecognizer.ERROR_AUDIO -> "Microphone error."
+            SpeechRecognizer.ERROR_CLIENT -> "Recognition client error."
+            SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS -> "Microphone permission required."
             SpeechRecognizer.ERROR_NETWORK,
             SpeechRecognizer.ERROR_NETWORK_TIMEOUT,
-            -> "Problema de red al reconocer."
-            SpeechRecognizer.ERROR_NO_MATCH -> "No detecté palabras."
-            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Reconocedor ocupado. Esperá un momento."
-            SpeechRecognizer.ERROR_SERVER -> "Error del servidor de voz."
-            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Silencio — dejé de grabar."
-            else -> "Error de voz ($code)."
+            -> "Network problem during recognition."
+            SpeechRecognizer.ERROR_NO_MATCH -> "No words detected."
+            SpeechRecognizer.ERROR_RECOGNIZER_BUSY -> "Recognizer busy. Wait a moment."
+            SpeechRecognizer.ERROR_SERVER -> "Recognition server error."
+            SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> "Silence — stopped listening."
+            else -> "Speech error ($code)."
         }
 }

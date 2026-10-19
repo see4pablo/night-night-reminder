@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
             if (granted) {
                 beginSession()
             } else {
-                viewModel.onSpeechError("Necesito el micrófono para armar la checklist.")
+                viewModel.onSpeechError("Microphone permission is required for voice checklists.")
             }
         }
 
@@ -125,7 +125,7 @@ class MainActivity : ComponentActivity() {
     private fun beginSession() {
         val helper = speechHelper ?: return
         if (!helper.isAvailable) {
-            viewModel.onSpeechError("Este teléfono no tiene reconocimiento de voz.")
+            viewModel.onSpeechError("Speech recognition is not available on this device.")
             return
         }
         wantContinuous = true
@@ -148,7 +148,7 @@ class MainActivity : ComponentActivity() {
     private fun onSilenceTimeout() {
         wantContinuous = false
         viewModel.setSessionActive(false)
-        viewModel.onSpeechError("Sin palabras — dejé de grabar.")
+        viewModel.onSpeechError("No words — stopped listening.")
         uiSounds?.playStop()
     }
 
@@ -167,8 +167,8 @@ class MainActivity : ComponentActivity() {
     private fun onSpeechError(message: String) {
         viewModel.onSpeechError(message)
         val endSessionQuietly =
-            message.contains("Silencio", ignoreCase = true) ||
-                message.contains("No detecté palabras", ignoreCase = true)
+            message.contains("Silence", ignoreCase = true) ||
+                message.contains("No words", ignoreCase = true)
         if (endSessionQuietly) {
             wantContinuous = false
             viewModel.setSessionActive(false)
@@ -176,9 +176,7 @@ class MainActivity : ComponentActivity() {
             return
         }
         if (!wantContinuous) return
-        if (message.contains("permiso", ignoreCase = true) ||
-            message.contains("permission", ignoreCase = true)
-        ) {
+        if (message.contains("permission", ignoreCase = true)) {
             endSession(playSound = false)
             return
         }

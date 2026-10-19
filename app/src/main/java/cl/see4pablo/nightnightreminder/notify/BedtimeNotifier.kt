@@ -26,7 +26,7 @@ object BedtimeNotifier {
                 "Night Recaller",
                 NotificationManager.IMPORTANCE_DEFAULT,
             ).apply {
-                description = "Avisos suaves de tareas pendientes"
+                description = "Gentle reminders for pending tasks"
                 setShowBadge(true)
                 enableVibration(true)
                 vibrationPattern = longArrayOf(0, 40, 60, 40)
@@ -45,19 +45,19 @@ object BedtimeNotifier {
         val title = "Night Recaller"
         val body =
             when {
-                pending.isEmpty() -> "Todo listo por hoy · night night"
+                pending.isEmpty() -> "All clear for tonight · night night"
                 pending.size == 1 ->
-                    "Tienes tareas pendientes · night night\n${pending.first().text}"
+                    "You have pending tasks · night night\n${pending.first().text}"
                 else ->
-                    "Tienes tareas pendientes · night night\n" +
+                    "You have pending tasks · night night\n" +
                         pending.take(3).joinToString("\n") { "· ${it.text}" } +
-                        if (pending.size > 3) "\n+${pending.size - 3} más" else ""
+                        if (pending.size > 3) "\n+${pending.size - 3} more" else ""
             }
         val short =
             if (pending.isEmpty()) {
-                "Todo listo · night night"
+                "All clear · night night"
             } else {
-                "Tienes tareas pendientes · night night"
+                "You have pending tasks · night night"
             }
 
         val open =

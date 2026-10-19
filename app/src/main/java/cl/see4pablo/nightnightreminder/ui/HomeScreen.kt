@@ -78,7 +78,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             Text(
-                text = "¿Algo pendiente\npara mañana?",
+                text = "Anything left\nfor tomorrow?",
                 style = MaterialTheme.typography.headlineMedium,
                 color = NightText.copy(alpha = 0.88f),
                 textAlign = TextAlign.Center,
@@ -87,9 +87,9 @@ fun HomeScreen(
             Text(
                 text =
                     when {
-                        state.partialTranscript.isNotBlank() -> "«${state.partialTranscript}»"
-                        listening -> "Te escucho…"
-                        else -> "Decilo en voz alta"
+                        state.partialTranscript.isNotBlank() -> "“${state.partialTranscript}”"
+                        listening -> "Listening…"
+                        else -> "Say it out loud"
                     },
                 style = MaterialTheme.typography.bodyMedium,
                 color = NightMuted,
@@ -103,12 +103,12 @@ fun HomeScreen(
             Spacer(modifier = Modifier.weight(0.12f))
 
             HomeNavButton(
-                title = "Hoy",
+                title = "Today",
                 subtitle =
                     if (state.pendingCount == 0) {
                         ChecklistViewModel.formatDay(state.today)
                     } else {
-                        "${state.pendingCount} pendiente${if (state.pendingCount == 1) "" else "s"}"
+                        "${state.pendingCount} pending"
                     },
                 onClick = viewModel::openToday,
             )
@@ -117,9 +117,9 @@ fun HomeScreen(
                 Text(
                     text =
                         if (state.lastAddedCount == 1) {
-                            "1 ítem agregado"
+                            "1 item added"
                         } else {
-                            "${state.lastAddedCount} ítems agregados"
+                            "${state.lastAddedCount} items added"
                         },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MicRed.copy(alpha = 0.9f),
@@ -129,10 +129,10 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(22.dp))
             HomeNavButton(
-                title = "Anteriores",
+                title = "Past",
                 subtitle =
                     if (state.past.isEmpty()) {
-                        "Sin noches guardadas"
+                        "No nights saved yet"
                     } else {
                         "${state.past.size} checklist${if (state.past.size == 1) "" else "s"}"
                     },
@@ -165,7 +165,7 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                     Text(
-                        text = "Probar aviso",
+                        text = "Try ping",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MicRed.copy(alpha = 0.7f),
                         modifier =
@@ -176,7 +176,7 @@ fun HomeScreen(
                             ),
                     )
                     Text(
-                        text = "Reprogramar",
+                        text = "Reschedule",
                         style = MaterialTheme.typography.bodyMedium,
                         color = NightMuted.copy(alpha = 0.75f),
                         modifier =
@@ -234,7 +234,7 @@ private fun RedMicButton(
         ) {
             Icon(
                 imageVector = Icons.Default.Mic,
-                contentDescription = if (listening) "Detener" else "Grabar",
+                contentDescription = if (listening) "Stop" else "Record",
                 tint = Color.White,
                 modifier = Modifier.size(40.dp),
             )

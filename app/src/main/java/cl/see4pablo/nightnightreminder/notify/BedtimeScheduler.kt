@@ -23,7 +23,7 @@ object BedtimeScheduler {
 
     fun formatNextTrigger(now: LocalDateTime = LocalDateTime.now()): String {
         val next = nextTriggerDateTime(now)
-        val fmt = DateTimeFormatter.ofPattern("EEE d MMM · HH:mm", Locale.forLanguageTag("es"))
+        val fmt = DateTimeFormatter.ofPattern("EEE d MMM · HH:mm", Locale.ENGLISH)
         return next.format(fmt)
     }
 

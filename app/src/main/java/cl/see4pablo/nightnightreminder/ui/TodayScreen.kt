@@ -64,7 +64,7 @@ fun TodayScreen(viewModel: ChecklistViewModel) {
             IconButton(onClick = viewModel::openHome) {
                 Icon(
                     Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "Volver",
+                    contentDescription = "Back",
                     tint = NightMuted,
                 )
             }
@@ -72,7 +72,7 @@ fun TodayScreen(viewModel: ChecklistViewModel) {
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(text = "HOY", style = MaterialTheme.typography.labelLarge)
+                Text(text = "TODAY", style = MaterialTheme.typography.labelLarge)
                 Text(
                     text = ChecklistViewModel.formatDay(state.today),
                     style = MaterialTheme.typography.headlineMedium,
@@ -90,7 +90,7 @@ fun TodayScreen(viewModel: ChecklistViewModel) {
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = "Nada aún.\nDictá desde la pantalla inicial.",
+                    text = "Nothing yet.\nDictate from the home screen.",
                     style = MaterialTheme.typography.headlineMedium,
                     color = NightMuted,
                     textAlign = TextAlign.Center,
@@ -156,7 +156,7 @@ private fun TonightRow(
         IconButton(onClick = onRemove, modifier = Modifier.size(32.dp)) {
             Icon(
                 Icons.Outlined.Close,
-                contentDescription = "Quitar",
+                contentDescription = "Remove",
                 tint = NightMuted,
                 modifier = Modifier.size(18.dp),
             )

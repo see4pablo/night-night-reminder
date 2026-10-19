@@ -32,7 +32,7 @@ data class ChecklistUiState(
     val listening: Boolean = false,
     val partialTranscript: String = "",
     val lastHeard: String = "",
-    val status: String = "Tocá el micrófono y decí lo que falta para esta noche.",
+    val status: String = "Tap the mic and say what’s left for tonight.",
     val nextAlarmLabel: String = "",
     val pendingCount: Int = 0,
     val lastAddedCount: Int = 0,
@@ -60,10 +60,10 @@ class ChecklistViewModel(application: Application) : AndroidViewModel(applicatio
         _state.update {
             it.copy(
                 sessionActive = active,
-                status = if (active) "Te escucho…" else "Listo.",
+                status = if (active) "Listening…" else "Done.",
                 partialTranscript = if (active) it.partialTranscript else "",
                 listening = if (active) it.listening else false,
-                // Fresh session starts the "ítems agregados" counter again.
+                // Fresh session resets the "items added" counter.
                 lastAddedCount = if (active) 0 else it.lastAddedCount,
             )
         }
@@ -96,7 +96,7 @@ class ChecklistViewModel(application: Application) : AndroidViewModel(applicatio
                     listening = false,
                     lastHeard = spoken,
                     partialTranscript = "",
-                    status = "Te escuché, pero no pude separar tareas. Probá con «también».",
+                    status = "Heard you, but couldn’t split tasks. Try saying «next».",
                     lastAddedCount = 0,
                 )
             }
@@ -116,7 +116,7 @@ class ChecklistViewModel(application: Application) : AndroidViewModel(applicatio
                 lastHeard = spoken,
                 partialTranscript = "",
                 todayItems = merged,
-                status = "Sumé $added.",
+                status = "Added $added.",
                 pendingCount = merged.count { !it.done },
                 lastAddedCount = if (added > 0) current.lastAddedCount + added else current.lastAddedCount,
             )
@@ -176,9 +176,9 @@ class ChecklistViewModel(application: Application) : AndroidViewModel(applicatio
                 pendingCount = pending,
                 debugMessage =
                     if (canExact) {
-                        "Alarma exacta OK · $pending pendiente(s)"
+                        "Exact alarm OK · $pending pending"
                     } else {
-                        "Sin alarma exacta (permiso del sistema) · $pending pendiente(s)"
+                        "No exact alarm (system permission) · $pending pending"
                     },
             )
         }
@@ -188,7 +188,7 @@ class ChecklistViewModel(application: Application) : AndroidViewModel(applicatio
         val app = getApplication<Application>()
         BedtimeNotifier.showPendingNotification(app, debug = true)
         _state.update {
-            it.copy(debugMessage = "Notificación de debug enviada · ${it.pendingCount} pendiente(s)")
+            it.copy(debugMessage = "Debug notification sent · ${it.pendingCount} pending")
         }
     }
 
@@ -198,7 +198,7 @@ class ChecklistViewModel(application: Application) : AndroidViewModel(applicatio
         BedtimeScheduler.scheduleDaily(app)
         refreshScheduleInfo()
         _state.update {
-            it.copy(debugMessage = "Reprogramada · próxima ${it.nextAlarmLabel}")
+            it.copy(debugMessage = "Rescheduled · next ${it.nextAlarmLabel}")
         }
     }
 
@@ -247,7 +247,7 @@ class ChecklistViewModel(application: Application) : AndroidViewModel(applicatio
 
     companion object {
         private val dayFmt =
-            DateTimeFormatter.ofPattern("d MMM", Locale.forLanguageTag("es"))
+            DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH)
 
         fun formatDay(date: LocalDate): String = date.format(dayFmt)
     }

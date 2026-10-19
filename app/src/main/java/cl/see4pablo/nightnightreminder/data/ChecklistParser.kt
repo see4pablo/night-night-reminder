@@ -3,15 +3,15 @@ package cl.see4pablo.nightnightreminder.data
 /**
  * Splits spoken text into checklist lines.
  *
- * Separators (natural speech):
- *  - commas / "and" / "y" / "después" / "luego"
+ * Natural separators:
+ *  - commas / "and" / "y" / "then" / "después" / "luego"
  *
  * Magic word (explicit new task):
- *  - "también", "además", "siguiente", "next", "nueva"
+ *  - "next", "también", "además", "siguiente", "nueva"
  *
  * Examples:
- *  - "cepillar dientes también cargar teléfono también empacar mochila"
- *  - "brush teeth, pack bag, and charge phone"
+ *  - "brush teeth next charge phone next pack bag"
+ *  - "cepillar dientes también cargar teléfono"
  */
 object ChecklistParser {
     private val splitter =
@@ -45,7 +45,7 @@ object ChecklistParser {
             .distinctBy { it.lowercase() }
     }
 
-    /** "cepillar dientes" → "Cepillar dientes" */
+    /** "brush teeth" → "Brush teeth" */
     fun capitalizePhrase(phrase: String): String {
         val trimmed = phrase.trim()
         if (trimmed.isEmpty()) return trimmed
