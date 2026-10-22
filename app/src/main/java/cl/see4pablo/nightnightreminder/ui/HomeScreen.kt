@@ -1,11 +1,17 @@
 package cl.see4pablo.nightnightreminder.ui
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -13,16 +19,25 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Circle
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,15 +46,27 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import cl.see4pablo.nightnightreminder.data.ChecklistItem
+import cl.see4pablo.nightnightreminder.ui.theme.DoneMuted
+import cl.see4pablo.nightnightreminder.ui.theme.JournalCover
+import cl.see4pablo.nightnightreminder.ui.theme.JournalCoverEdge
+import cl.see4pablo.nightnightreminder.ui.theme.JournalGold
 import cl.see4pablo.nightnightreminder.ui.theme.MicRed
 import cl.see4pablo.nightnightreminder.ui.theme.MicRedGlow
 import cl.see4pablo.nightnightreminder.ui.theme.NightMuted
-import cl.see4pablo.nightnightreminder.ui.theme.NightText
+import cl.see4pablo.nightnightreminder.ui.theme.Paper
+import cl.see4pablo.nightnightreminder.ui.theme.PaperInk
+import cl.see4pablo.nightnightreminder.ui.theme.PaperLine
+import cl.see4pablo.nightnightreminder.ui.theme.PaperMuted
 
 @Composable
 fun HomeScreen(
@@ -48,6 +75,7 @@ fun HomeScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val listening = state.listening || state.sessionActive
+    val diaryOpen = !listening && state.todayItems.isNotEmpty()
 
     Box(
         modifier =
@@ -55,7 +83,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        listOf(Color(0xFF0B0D12), Color(0xFF10131A), Color(0xFF0A0C10)),
+                        listOf(Color(0xFF0A0B0F), Color(0xFF12141A), Color(0xFF0A0B0F)),
                     ),
                 ),
     ) {
@@ -64,127 +92,263 @@ fun HomeScreen(
                 Modifier
                     .fillMaxSize()
                     .statusBarsPadding()
-                    .padding(horizontal = 32.dp),
+                    .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.weight(0.14f))
-
-            Text(
-                text = "Night\nRecaller",
-                style = MaterialTheme.typography.displayLarge,
-                textAlign = TextAlign.Center,
-            )
-
             Spacer(modifier = Modifier.height(20.dp))
-
             Text(
-                text = "Anything left\nfor tomorrow?",
-                style = MaterialTheme.typography.headlineMedium,
-                color = NightText.copy(alpha = 0.88f),
-                textAlign = TextAlign.Center,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text =
-                    when {
-                        state.partialTranscript.isNotBlank() -> "“${state.partialTranscript}”"
-                        listening -> "Listening…"
-                        else -> "Say it out loud"
-                    },
-                style = MaterialTheme.typography.bodyMedium,
+                text = "Sleepy Goals",
+                style = MaterialTheme.typography.labelLarge,
                 color = NightMuted,
-                textAlign = TextAlign.Center,
             )
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.weight(0.1f))
-
-            RedMicButton(listening = listening, onClick = onMicClick)
-
-            Spacer(modifier = Modifier.weight(0.12f))
-
-            HomeNavButton(
-                title = "Today",
-                subtitle =
-                    if (state.pendingCount == 0) {
-                        ChecklistViewModel.formatDay(state.today)
-                    } else {
-                        "${state.pendingCount} pending"
-                    },
-                onClick = viewModel::openToday,
-            )
-            if (state.lastAddedCount > 0) {
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text =
-                        if (state.lastAddedCount == 1) {
-                            "1 item added"
-                        } else {
-                            "${state.lastAddedCount} items added"
-                        },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MicRed.copy(alpha = 0.9f),
-                    textAlign = TextAlign.Center,
-                )
-            }
-
-            Spacer(modifier = Modifier.height(22.dp))
-            HomeNavButton(
-                title = "Past",
-                subtitle =
-                    if (state.past.isEmpty()) {
-                        "No nights saved yet"
-                    } else {
-                        "${state.past.size} checklist${if (state.past.size == 1) "" else "s"}"
-                    },
-                onClick = viewModel::openPast,
-            )
-
-            Spacer(modifier = Modifier.weight(0.16f))
-
-            Column(
+            AnimatedContent(
+                targetState = diaryOpen,
+                transitionSpec = {
+                    fadeIn(tween(420)) togetherWith fadeOut(tween(280))
+                },
+                label = "diary",
                 modifier =
                     Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 28.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = "20:00 · ${state.nextAlarmLabel.ifBlank { "—" }}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = NightMuted.copy(alpha = 0.65f),
-                    textAlign = TextAlign.Center,
-                )
-                if (state.debugMessage.isNotBlank()) {
-                    Text(
-                        text = state.debugMessage,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = NightMuted.copy(alpha = 0.55f),
-                        textAlign = TextAlign.Center,
+                        .weight(1f)
+                        .fillMaxWidth(),
+            ) { open ->
+                if (open) {
+                    OpenDiary(
+                        dateLabel = ChecklistViewModel.formatDay(state.today),
+                        items = state.todayItems,
+                        addedCount = state.lastAddedCount,
+                        onToggle = viewModel::toggleToday,
+                        onRemove = viewModel::removeToday,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    ClosedDiary(
+                        listening = listening,
+                        partial = state.partialTranscript,
+                        status =
+                            when {
+                                listening && state.partialTranscript.isBlank() -> "Listening…"
+                                !listening -> "Anything left for tomorrow?"
+                                else -> ""
+                            },
+                        onMicClick = onMicClick,
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            if (diaryOpen) {
+                Text(
+                    text = "Tap mic below to add more",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = NightMuted.copy(alpha = 0.7f),
+                )
                 Spacer(modifier = Modifier.height(8.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                    Text(
-                        text = "Try ping",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MicRed.copy(alpha = 0.7f),
-                        modifier =
-                            Modifier.clickable(
-                                indication = null,
-                                interactionSource = remember { MutableInteractionSource() },
-                                onClick = viewModel::debugFireNotificationNow,
-                            ),
+                CompactMic(listening = false, onClick = onMicClick)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text =
+                    if (state.past.isEmpty()) {
+                        "Past nights"
+                    } else {
+                        "Past · ${state.past.size}"
+                    },
+                style = MaterialTheme.typography.labelLarge,
+                color = NightMuted,
+                modifier =
+                    Modifier
+                        .clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onClick = viewModel::openPast,
+                        )
+                        .padding(vertical = 8.dp),
+            )
+
+            // Debug strip
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
+                modifier = Modifier.padding(bottom = 20.dp),
+            ) {
+                Text(
+                    text = "Try ping",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MicRed.copy(alpha = 0.65f),
+                    modifier =
+                        Modifier.clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onClick = viewModel::debugFireNotificationNow,
+                        ),
+                )
+                Text(
+                    text = "Reschedule",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = NightMuted.copy(alpha = 0.65f),
+                    modifier =
+                        Modifier.clickable(
+                            indication = null,
+                            interactionSource = remember { MutableInteractionSource() },
+                            onClick = viewModel::rescheduleBedtimeAlarm,
+                        ),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ClosedDiary(
+    listening: Boolean,
+    partial: String,
+    status: String,
+    onMicClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxWidth(0.82f)
+                    .fillMaxHeight(0.62f)
+                    .shadow(18.dp, RoundedCornerShape(6.dp))
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(JournalCover, Color(0xFF1A1A1A), JournalCover),
+                        ),
                     )
-                    Text(
-                        text = "Reschedule",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = NightMuted.copy(alpha = 0.75f),
-                        modifier =
-                            Modifier.clickable(
-                                indication = null,
-                                interactionSource = remember { MutableInteractionSource() },
-                                onClick = viewModel::rescheduleBedtimeAlarm,
-                            ),
+                    .border(1.dp, JournalCoverEdge, RoundedCornerShape(6.dp))
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = onMicClick,
+                    ),
+            contentAlignment = Alignment.Center,
+        ) {
+            // Spine
+            Box(
+                modifier =
+                    Modifier
+                        .align(Alignment.CenterStart)
+                        .fillMaxHeight()
+                        .width(10.dp)
+                        .background(Color(0xFF0A0A0A)),
+            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "SLEEPY\nGOALS",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = JournalGold,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(modifier = Modifier.height(28.dp))
+                CompactMic(listening = listening, onClick = onMicClick)
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text =
+                        when {
+                            partial.isNotBlank() -> "“$partial”"
+                            else -> status
+                        },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = NightMuted,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 24.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun OpenDiary(
+    dateLabel: String,
+    items: List<ChecklistItem>,
+    addedCount: Int,
+    onToggle: (String) -> Unit,
+    onRemove: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .shadow(12.dp, RoundedCornerShape(4.dp))
+                .clip(RoundedCornerShape(4.dp))
+                .background(Paper)
+                .border(1.dp, PaperLine, RoundedCornerShape(4.dp)),
+    ) {
+        // Ruled lines
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val step = 36.dp.toPx()
+            var y = 72.dp.toPx()
+            while (y < size.height) {
+                drawLine(
+                    color = PaperLine,
+                    start = Offset(24.dp.toPx(), y),
+                    end = Offset(size.width - 24.dp.toPx(), y),
+                    strokeWidth = 1f,
+                )
+                y += step
+            }
+            // Margin line
+            drawLine(
+                color = Color(0xFFE0C8C0),
+                start = Offset(48.dp.toPx(), 0f),
+                end = Offset(48.dp.toPx(), size.height),
+                strokeWidth = 1.5f,
+            )
+        }
+
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(start = 56.dp, end = 20.dp, top = 20.dp, bottom = 16.dp),
+        ) {
+            Text(
+                text = dateLabel,
+                style = MaterialTheme.typography.labelLarge,
+                color = PaperMuted,
+            )
+            Text(
+                text = "Tonight",
+                style = MaterialTheme.typography.headlineMedium,
+                color = PaperInk,
+            )
+            if (addedCount > 0) {
+                Text(
+                    text =
+                        if (addedCount == 1) {
+                            "1 item added"
+                        } else {
+                            "$addedCount items added"
+                        },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MicRed.copy(alpha = 0.85f),
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                items(items, key = { it.id }) { item ->
+                    PaperRow(
+                        item = item,
+                        onToggle = { onToggle(item.id) },
+                        onRemove = { onRemove(item.id) },
                     )
                 }
             }
@@ -193,28 +357,76 @@ fun HomeScreen(
 }
 
 @Composable
-private fun RedMicButton(
+private fun PaperRow(
+    item: ChecklistItem,
+    onToggle: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(36.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(
+            imageVector = if (item.done) Icons.Outlined.CheckCircle else Icons.Outlined.Circle,
+            contentDescription = null,
+            tint = if (item.done) DoneMuted else PaperInk.copy(alpha = 0.55f),
+            modifier =
+                Modifier
+                    .size(18.dp)
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = onToggle,
+                    ),
+        )
+        Text(
+            text = item.text,
+            style = MaterialTheme.typography.bodyLarge,
+            color = if (item.done) DoneMuted else PaperInk,
+            textDecoration = if (item.done) TextDecoration.LineThrough else null,
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() },
+                        onClick = onToggle,
+                    ),
+        )
+        IconButton(onClick = onRemove, modifier = Modifier.size(28.dp)) {
+            Icon(
+                Icons.Outlined.Close,
+                contentDescription = "Remove",
+                tint = PaperMuted,
+                modifier = Modifier.size(16.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun CompactMic(
     listening: Boolean,
     onClick: () -> Unit,
 ) {
     val pulse =
-        rememberInfiniteTransition(label = "micPulse").animateFloat(
+        rememberInfiniteTransition(label = "mic").animateFloat(
             initialValue = 1f,
             targetValue = if (listening) 1.08f else 1f,
             animationSpec =
-                infiniteRepeatable(
-                    animation = tween(850),
-                    repeatMode = RepeatMode.Reverse,
-                ),
-            label = "pulse",
+                infiniteRepeatable(tween(850), RepeatMode.Reverse),
+            label = "p",
         )
-
     Box(contentAlignment = Alignment.Center) {
         if (listening) {
             Box(
                 modifier =
                     Modifier
-                        .size(132.dp)
+                        .size(88.dp)
                         .scale(pulse.value)
                         .background(MicRedGlow, CircleShape),
             )
@@ -222,7 +434,7 @@ private fun RedMicButton(
         Box(
             modifier =
                 Modifier
-                    .size(100.dp)
+                    .size(64.dp)
                     .scale(if (listening) pulse.value else 1f)
                     .background(MicRed, CircleShape)
                     .clickable(
@@ -233,44 +445,11 @@ private fun RedMicButton(
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                imageVector = Icons.Default.Mic,
+                Icons.Default.Mic,
                 contentDescription = if (listening) "Stop" else "Record",
                 tint = Color.White,
-                modifier = Modifier.size(40.dp),
+                modifier = Modifier.size(28.dp),
             )
         }
-    }
-}
-
-@Composable
-private fun HomeNavButton(
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit,
-) {
-    Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .clickable(
-                    indication = null,
-                    interactionSource = remember { MutableInteractionSource() },
-                    onClick = onClick,
-                )
-                .padding(vertical = 6.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineLarge,
-            textAlign = TextAlign.Center,
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = subtitle,
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            color = NightMuted,
-        )
     }
 }

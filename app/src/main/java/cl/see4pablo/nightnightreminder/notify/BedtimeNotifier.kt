@@ -14,7 +14,7 @@ import cl.see4pablo.nightnightreminder.data.ChecklistStore
 import java.time.LocalDate
 
 object BedtimeNotifier {
-    const val CHANNEL_ID = "night_recaller_social"
+    const val CHANNEL_ID = "sleepy_goals_social"
     private const val NOTIFICATION_ID = 2008
 
     fun ensureChannel(context: Context) {
@@ -23,10 +23,10 @@ object BedtimeNotifier {
         val channel =
             NotificationChannel(
                 CHANNEL_ID,
-                "Night Recaller",
+                "Sleepy Goals",
                 NotificationManager.IMPORTANCE_DEFAULT,
             ).apply {
-                description = "Gentle reminders for pending tasks"
+                description = "Gentle reminders for pending nightly goals"
                 setShowBadge(true)
                 enableVibration(true)
                 vibrationPattern = longArrayOf(0, 40, 60, 40)
@@ -42,7 +42,7 @@ object BedtimeNotifier {
     fun showPendingNotification(context: Context, debug: Boolean = false) {
         ensureChannel(context)
         val pending = pendingToday(context)
-        val title = "Night Recaller"
+        val title = "Sleepy Goals"
         val body =
             when {
                 pending.isEmpty() -> "All clear for tonight · night night"

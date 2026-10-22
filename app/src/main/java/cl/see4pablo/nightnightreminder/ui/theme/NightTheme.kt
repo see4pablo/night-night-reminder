@@ -11,16 +11,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 
+/** Night backdrop behind the journal. */
 val NightInk = Color(0xFF0B0D12)
 val NightSurface = Color(0xFF12151C)
 val NightMuted = Color(0xFF8A90A0)
 val NightText = Color(0xFFE8E6E1)
+
+/** Closed journal cover. */
+val JournalCover = Color(0xFF141414)
+val JournalCoverEdge = Color(0xFF2A2A2A)
+val JournalGold = Color(0xFFC4B59A)
+
+/** Open paper page. */
+val Paper = Color(0xFFF3ECDF)
+val PaperLine = Color(0xFFD9D0C0)
+val PaperInk = Color(0xFF1C1A17)
+val PaperMuted = Color(0xFF6E675C)
+
 val MicRed = Color(0xFFD62828)
 val MicRedGlow = Color(0x33D62828)
-val MicCream = Color(0xFFC8C0B4)
 val MicCreamSoft = Color(0xFF9A9288)
-val MicCreamGlow = Color(0x22C8C0B4)
-val DoneMuted = Color(0xFF5C6370)
+val DoneMuted = Color(0xFF8A8378)
 
 private val NightColors =
     darkColorScheme(
@@ -41,17 +52,8 @@ private val NightTypography =
             TextStyle(
                 fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Light,
-                fontSize = 48.sp,
-                lineHeight = 52.sp,
-                letterSpacing = 0.5.sp,
-                color = NightText,
-                textAlign = TextAlign.Center,
-            ),
-        displayMedium =
-            TextStyle(
-                fontFamily = FontFamily.Serif,
-                fontWeight = FontWeight.Light,
-                fontSize = 36.sp,
+                fontSize = 42.sp,
+                lineHeight = 46.sp,
                 letterSpacing = 1.sp,
                 color = NightText,
                 textAlign = TextAlign.Center,
@@ -60,7 +62,7 @@ private val NightTypography =
             TextStyle(
                 fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Normal,
-                fontSize = 32.sp,
+                fontSize = 28.sp,
                 letterSpacing = 0.5.sp,
                 color = NightText,
                 textAlign = TextAlign.Center,
@@ -69,38 +71,38 @@ private val NightTypography =
             TextStyle(
                 fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Normal,
-                fontSize = 24.sp,
-                letterSpacing = 0.5.sp,
+                fontSize = 22.sp,
+                letterSpacing = 0.3.sp,
                 color = NightText,
             ),
         titleMedium =
             TextStyle(
                 fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Medium,
-                fontSize = 16.sp,
-                letterSpacing = 1.2.sp,
+                fontSize = 15.sp,
+                letterSpacing = 1.5.sp,
                 color = NightMuted,
             ),
         bodyLarge =
             TextStyle(
-                fontFamily = FontFamily.SansSerif,
+                fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Normal,
-                fontSize = 17.sp,
-                lineHeight = 24.sp,
-                color = NightText,
+                fontSize = 18.sp,
+                lineHeight = 28.sp,
+                color = PaperInk,
             ),
         bodyMedium =
             TextStyle(
-                fontFamily = FontFamily.SansSerif,
+                fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Normal,
                 fontSize = 14.sp,
                 color = NightMuted,
             ),
         labelLarge =
             TextStyle(
-                fontFamily = FontFamily.SansSerif,
+                fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Medium,
-                fontSize = 13.sp,
+                fontSize = 12.sp,
                 letterSpacing = 2.sp,
                 color = NightMuted,
             ),

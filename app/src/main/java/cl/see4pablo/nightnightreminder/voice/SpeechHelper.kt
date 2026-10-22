@@ -121,7 +121,7 @@ class SpeechHelper(
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE, locale.toLanguageTag())
                 putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
                 putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 3)
-                putExtra(RecognizerIntent.EXTRA_PROMPT, "Night Recaller")
+                putExtra(RecognizerIntent.EXTRA_PROMPT, "Sleepy Goals")
             }
         speech.startListening(intent)
     }

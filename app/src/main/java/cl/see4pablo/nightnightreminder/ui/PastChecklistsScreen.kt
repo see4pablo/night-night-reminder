@@ -68,7 +68,7 @@ fun PastChecklistsScreen(viewModel: ChecklistViewModel) {
             ) {
                 Text(text = "PAST", style = MaterialTheme.typography.labelLarge)
                 Text(
-                    text = "Nights",
+                    text = "Earlier nights",
                     style = MaterialTheme.typography.headlineLarge,
                 )
             }

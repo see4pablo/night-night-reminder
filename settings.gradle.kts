@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "NightRecaller"
+rootProject.name = "SleepyGoals"
 include(":app")
